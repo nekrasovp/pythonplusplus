@@ -16,7 +16,7 @@ Use PyInstaller to create the executable:
 2. **Run PyInstaller**: Execute the following command to bundle script:
 
 ```sh
-pyinstaller --distpath . --name python++ --onefile main.py
+pyinstaller --distpath . --name python --onefile main.py
 ```
 
 ## Step 3: Run the Executable
@@ -26,11 +26,11 @@ After PyInstaller finishes, you’ll find the standalone executable in the root 
 On **Unix-based systems (Linux/macOS)**:
 
 ```sh
-./python++ --debug script.py
+./python --debug script.py
 ```
 
 On **Windows**:
 
 ```sh
-python++.exe --debug script.py
+python.exe --debug script.py
 ```
