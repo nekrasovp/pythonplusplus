@@ -1,4 +1,1 @@
-astor
-ply
-
 pyinstaller

@@ -1,62 +1,31 @@
-import sys
-from pythonplusplus.lexer import lexer
-from pythonplusplus.parser import parser
+import logging
+import argparse
 
-
-# Function to convert parse tree to Python code
-def transform_to_python_code(parse_tree, indent=0):
-    result = ""
-    if isinstance(parse_tree, tuple):
-        if parse_tree[0] == 'program':
-            for statement in parse_tree[1]:
-                result += transform_to_python_code(statement, indent) + "\n"
-        elif parse_tree[0] == '=':
-            result += " " * indent + f"{parse_tree[1]} = {transform_to_python_code(parse_tree[2], 0)}"
-        elif parse_tree[0] == '+=':
-            result += " " * indent + f"{parse_tree[1]} += {parse_tree[2]}"
-        elif parse_tree[0] == '+':
-            left = transform_to_python_code(parse_tree[1], 0)
-            right = transform_to_python_code(parse_tree[2], 0)
-            result += f"{left} + {right}"
-    else:
-        result += str(parse_tree)
-    return result
+from pythonplusplus.preprocessor import preprocess_code
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: mypython <script>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="A Python script with custom preprocessor.")
+    parser.add_argument('script', help="The Python script to execute.")
+    parser.add_argument('--debug', action='store_true', help="Enable debug logging.")
 
-    script_path = sys.argv[1]
+    args = parser.parse_args()
+
+    logging_level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(level=logging_level)
+
+    script_path = args.script
 
     with open(script_path, 'r') as file:
         source_code = file.read()
 
-    # Lexing
-    lexer.input(source_code)
-    
-    # Tokenize input for debugging
-    print("Tokens:")
-    for token in lexer:
-        print(token)
+    preprocessed_code = preprocess_code(source_code)
+    logging.debug("Preprocessed Code:\n%s", preprocessed_code)
 
-    # Parsing
-    parse_tree = parser.parse(source_code, lexer=lexer)
-    if parse_tree:
-        print(f"Parse Tree: {parse_tree}")
-
-        # Transform to Python code
-        transformed_code = transform_to_python_code(parse_tree)
-        print("Transformed Code:\n", transformed_code)
-
-        # Execute the transformed code
-        try:
-            exec(transformed_code, {"__name__": "__main__", "__file__": script_path})
-        except Exception as e:
-            print(f"Execution Error: {e}")
-    else:
-        print("Failed to parse the script.")
+    try:
+        exec(preprocessed_code, {"__name__": "__main__", "file": script_path})
+    except Exception as e:
+        print(f"Execution Error: {e}")
 
 
 if __name__ == "__main__":
